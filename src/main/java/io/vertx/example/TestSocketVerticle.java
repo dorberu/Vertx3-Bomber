@@ -6,12 +6,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.msgpack.MessagePack;
-import org.msgpack.packer.Packer;
-import org.msgpack.unpacker.Unpacker;
-import org.msgpack.template.Template;
-import static org.msgpack.template.Templates.tMap;
-import static org.msgpack.template.Templates.TString;
+import org.msgpack.core.MessageBufferPacker;
+import org.msgpack.core.MessagePack;
+import org.msgpack.core.MessageUnpacker;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
@@ -56,13 +53,17 @@ public class TestSocketVerticle extends AbstractVerticle {
     
     public byte[] serialize (Map<String, String> data)
     {
-        MessagePack mp = new MessagePack();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Packer packer = mp.createPacker(out);
         byte[] ret = null;
+        MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         try {
-            packer.write(data);
-            ret = out.toByteArray();
+            packer.packMapHeader(data.size());
+            for (Map.Entry<String, String> map : data.entrySet())
+            {
+                packer.packString(map.getKey());
+                packer.packString(map.getValue());
+            }
+            packer.close();
+            ret = packer.toByteArray();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -72,13 +73,17 @@ public class TestSocketVerticle extends AbstractVerticle {
     
     public Map<String, String> deserialize (byte[] data)
     {
-        MessagePack mp = new MessagePack();
-        ByteArrayInputStream in = new ByteArrayInputStream(data);
-        Unpacker unpacker = mp.createUnpacker(in);
-        Template<Map<String, String>> mapTmpl = tMap(TString, TString);
         Map<String, String> ret = new HashMap<String, String> ();
+        MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(data);
         try {
-            ret = unpacker.read(mapTmpl);
+            int mapSize = unpacker.unpackMapHeader();
+            for (int i = 0; i < mapSize; i++)
+            {
+                String key = unpacker.unpackString();
+                String value = unpacker.unpackString();
+                ret.put(key, value);
+            }
+            unpacker.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
