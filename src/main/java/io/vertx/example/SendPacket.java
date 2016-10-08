@@ -19,8 +19,7 @@ public class SendPacket
     {
         try {
             _packer.packMapHeader(values.size());
-            for (Map.Entry<String, String> map : values.entrySet())
-            {
+            for (Map.Entry<String, String> map : values.entrySet()) {
                 _packer.packString(map.getKey());
                 _packer.packString(map.getValue());
             }

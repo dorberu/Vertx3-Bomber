@@ -16,8 +16,7 @@ public class ReceivePacket
         MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(data);
         try {
             int mapSize = unpacker.unpackMapHeader();
-            for (int i = 0; i < mapSize; i++)
-            {
+            for (int i = 0; i < mapSize; i++) {
                 String key = unpacker.unpackString();
                 String value = unpacker.unpackString();
                 _data.put(key, value);
@@ -29,8 +28,7 @@ public class ReceivePacket
         }
     }
     
-    public Map<String, String> getData()
-    {
+    public Map<String, String> getData() {
         return _data;
     }
 }
