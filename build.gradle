@@ -17,6 +17,7 @@ dependencies {
   compile "io.vertx:vertx-core:$version"
   compile "io.vertx:vertx-web:3.3.2"
   compile 'org.msgpack:msgpack-core:0.8.11'
+  compile 'org.apache.commons:commons-lang3:3.4'
 }
 
 eclipse {
