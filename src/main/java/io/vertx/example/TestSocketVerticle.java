@@ -1,14 +1,7 @@
 package io.vertx.example;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.msgpack.core.MessageBufferPacker;
-import org.msgpack.core.MessagePack;
-import org.msgpack.core.MessageUnpacker;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
@@ -29,13 +22,16 @@ public class TestSocketVerticle extends AbstractVerticle {
             websocket.handler(new Handler<Buffer>() {
                 @Override
                 public void handle(final Buffer data) {
-                    Map<String, String> receive = deserialize(data.getBytes());
+                    ReceivePacket rp = new ReceivePacket(data.getBytes());
+                    Map<String, String> receive = rp.getData();
                     System.out.println("receive: " + receive.get("id") + " : " + receive.get("flag") + " : " + receive.get("日本語のキー"));
 
                     Map<String, String> send = getData();
                     System.out.println("send: " + send.get("id") + " : " + send.get("flag") + " : " + send.get("日本語のキー"));
 
-                    Buffer buffer = Buffer.buffer().appendBytes(serialize(send));
+                    SendPacket sp = new SendPacket();
+                    sp.Add(send);
+                    Buffer buffer = Buffer.buffer().appendBytes(sp.toByteArray());
                     websocket.write(buffer);
                 }
             });
@@ -49,45 +45,5 @@ public class TestSocketVerticle extends AbstractVerticle {
         map.put("flag", "false");
         map.put("日本語のキー", "日本語の値：サーバ");
         return map;
-    }
-    
-    public byte[] serialize (Map<String, String> data)
-    {
-        byte[] ret = null;
-        MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
-        try {
-            packer.packMapHeader(data.size());
-            for (Map.Entry<String, String> map : data.entrySet())
-            {
-                packer.packString(map.getKey());
-                packer.packString(map.getValue());
-            }
-            packer.close();
-            ret = packer.toByteArray();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return ret;
-    }
-    
-    public Map<String, String> deserialize (byte[] data)
-    {
-        Map<String, String> ret = new HashMap<String, String> ();
-        MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(data);
-        try {
-            int mapSize = unpacker.unpackMapHeader();
-            for (int i = 0; i < mapSize; i++)
-            {
-                String key = unpacker.unpackString();
-                String value = unpacker.unpackString();
-                ret.put(key, value);
-            }
-            unpacker.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return ret;
     }
 }
