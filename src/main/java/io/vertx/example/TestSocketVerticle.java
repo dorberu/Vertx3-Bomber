@@ -17,6 +17,7 @@ import io.vertx.core.http.ServerWebSocket;
 public class TestSocketVerticle extends AbstractVerticle
 {
 
+    public static final double FPS = 30.0f;
     private Map<String, ServerWebSocket> _socketList;
 
     @Override
@@ -24,6 +25,9 @@ public class TestSocketVerticle extends AbstractVerticle
     {
         System.out.println("start");
         _socketList = new HashMap<String, ServerWebSocket>();
+        
+        FPS _fps = new FPS(vertx);
+        _fps.start(this::onTick, FPS);
 
         HttpServer server = vertx.createHttpServer();
         server.websocketHandler(websocket -> {
@@ -60,6 +64,11 @@ public class TestSocketVerticle extends AbstractVerticle
             });
 
         }).listen(8080);
+    }
+
+    protected void onTick(Long microDelay)
+    {
+//        System.out.println("onTick microDelay: " + microDelay);
     }
     
     private Map<String, String> getData ()
