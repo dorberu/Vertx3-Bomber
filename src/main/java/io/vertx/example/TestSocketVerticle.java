@@ -16,9 +16,10 @@ import io.vertx.core.http.ServerWebSocket;
  */
 public class TestSocketVerticle extends AbstractVerticle
 {
-
     public static final double FPS = 30.0f;
     private Map<String, ServerWebSocket> _socketList;
+
+    long _coolFrame = 0;
 
     @Override
     public void start()
@@ -68,15 +69,39 @@ public class TestSocketVerticle extends AbstractVerticle
 
     protected void onTick(Long microDelay)
     {
+        if (++_coolFrame >= 30)
+        {
+            packetPublish(getHeartBeatPacket(), null);
+            _coolFrame = 0;
+        }
 //        System.out.println("onTick microDelay: " + microDelay);
+    }
+    
+    private void packetPublish(Map<String, String> packet, String ignoreHandlerId)
+    {
+        for (Map.Entry<String, ServerWebSocket> e : _socketList.entrySet()) {
+            if (ignoreHandlerId == e.getKey()) continue; 
+            SendPacket sp = new SendPacket();
+            sp.Add(getHeartBeatPacket());
+            Buffer buffer = Buffer.buffer().appendBytes(sp.toByteArray());
+            e.getValue().write(buffer);
+        }
     }
     
     private Map<String, String> getData ()
     {
         Map<String, String> map = new HashMap<String, String>();
-        map.put("id", "1");
+        map.put("id", "2");
         map.put("flag", "false");
         map.put("日本語のキー", "日本語の値：サーバ");
+        return map;
+    }
+    
+    private Map<String, String> getHeartBeatPacket ()
+    {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("id", "1");
+        map.put("connectCount", String.valueOf(_socketList.size()));
         return map;
     }
 }
