@@ -43,15 +43,11 @@ public class TestSocketVerticle extends AbstractVerticle
                 {
                     ReceivePacket rp = new ReceivePacket(data.getBytes());
                     Map<String, String> receive = rp.getData();
-                    System.out.println("handlerId: " + handlerId + " receive: " + receive.get("id") + " : " + receive.get("flag") + " : " + receive.get("日本語のキー"));
+//                    Log("Receive: ", receive);
 
-                    Map<String, String> send = getData();
-                    System.out.println("handlerId: " + handlerId + " send: " + send.get("id") + " : " + send.get("flag") + " : " + send.get("日本語のキー"));
-
-                    SendPacket sp = new SendPacket();
-                    sp.Add(send);
-                    Buffer buffer = Buffer.buffer().appendBytes(sp.toByteArray());
-                    websocket.write(buffer);
+                    Map<String, String> send = receive;
+                    send.put("handlerId", handlerId);
+                    packetPublish(send, handlerId);
                 }
             });
 
@@ -82,19 +78,10 @@ public class TestSocketVerticle extends AbstractVerticle
         for (Map.Entry<String, ServerWebSocket> e : _socketList.entrySet()) {
             if (ignoreHandlerId == e.getKey()) continue; 
             SendPacket sp = new SendPacket();
-            sp.Add(getHeartBeatPacket());
+            sp.Add(packet);
             Buffer buffer = Buffer.buffer().appendBytes(sp.toByteArray());
             e.getValue().write(buffer);
         }
-    }
-    
-    private Map<String, String> getData ()
-    {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("id", "2");
-        map.put("flag", "false");
-        map.put("日本語のキー", "日本語の値：サーバ");
-        return map;
     }
     
     private Map<String, String> getHeartBeatPacket ()
@@ -103,5 +90,14 @@ public class TestSocketVerticle extends AbstractVerticle
         map.put("id", "1");
         map.put("connectCount", String.valueOf(_socketList.size()));
         return map;
+    }
+    
+    private void Log (String preStr, Map<String, String> data)
+    {
+        String strLog = preStr;
+        for (Map.Entry<String, String> e : data.entrySet()) {
+            strLog += (e.getKey() + "=" + e.getValue() + "; ");
+        }
+        System.out.println(strLog);
     }
 }
