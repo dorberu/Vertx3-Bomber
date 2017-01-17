@@ -20,19 +20,16 @@ public class WebSocketServerVerticle extends AbstractVerticle {
     // コンストラクタ
     public WebSocketServerVerticle()
     {
-        System.out.println("WebSocketServerVerticle constructor");
     }
     
     @Override
     public void init(Vertx vertx, Context context) {
-        System.out.println("init");
         super.init(vertx, context);
 
         _socketList = new HashMap<String, ServerWebSocket>();
 
         HttpServer server = vertx.createHttpServer();
         server.websocketHandler(websocket -> {
-
             String handlerId = RandomStringUtils.random(20, "0123456789abcdefghijklmnopqrstuvwxyz");
             _socketList.put(handlerId, websocket);
             System.out.println("handlerId: " + handlerId + " connect.");
@@ -41,7 +38,7 @@ public class WebSocketServerVerticle extends AbstractVerticle {
                 @Override
                 public void handle(final Buffer data)
                 {
-                    vertx.eventBus().send("test.local", data.getBytes());
+                    vertx.eventBus().send("test.local", "messageTest");
                 }
             });
 
@@ -55,16 +52,6 @@ public class WebSocketServerVerticle extends AbstractVerticle {
             });
 
         }).listen(8080);
-    }
-    
-    private void packetPublish(Map<String, String> packet, String ignoreHandlerId)
-    {
-        for (Map.Entry<String, ServerWebSocket> e : _socketList.entrySet()) {
-            if (ignoreHandlerId == e.getKey()) continue; 
-            SendPacket sp = new SendPacket();
-            sp.Add(packet);
-            Buffer buffer = Buffer.buffer().appendBytes(sp.toByteArray());
-            e.getValue().write(buffer);
-        }
+        System.out.println("WebSocketServerVerticle init completed.");
     }
 }

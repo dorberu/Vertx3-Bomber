@@ -32,7 +32,6 @@ public class TestServer implements EventBusMessageHandler.MessageReceiver
         if (++_coolFrame >= 30)
         {
             _coolFrame = 0;
-            System.out.println("handlerId: " + _handlerId + " testServer.");
         }
     }
 
@@ -43,6 +42,7 @@ public class TestServer implements EventBusMessageHandler.MessageReceiver
 
     @Override
     public boolean onMessagePacketBytesReceive(String handlerId, byte[] packetData) {
+        System.out.println("TestServer onMessagePacketBytesReceive");
         _handlerId = handlerId;
         return false;
     }

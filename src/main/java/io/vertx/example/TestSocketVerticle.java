@@ -15,7 +15,7 @@ public class TestSocketVerticle extends AbstractVerticle
     @Override
     public void start()
     {
-        _server.onInit(getVertx());
+        _server.onInit(vertx);
 
         FPS _fps = new FPS(vertx);
         _fps.start(this::onTick, FPS);
