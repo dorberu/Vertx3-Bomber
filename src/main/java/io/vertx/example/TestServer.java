@@ -41,7 +41,7 @@ public class TestServer implements EventBusMessageHandler.MessageReceiver
     }
 
     @Override
-    public boolean onMessagePacketBytesReceive(String handlerId, byte[] packetData) {
+    public boolean onMessagePacketBytesReceive(String handlerId, String packetData) {
         System.out.println("TestServer onMessagePacketBytesReceive");
         _handlerId = handlerId;
         return false;

@@ -38,7 +38,7 @@ public class WebSocketServerVerticle extends AbstractVerticle {
                 @Override
                 public void handle(final Buffer data)
                 {
-                    vertx.eventBus().send("test.local", "messageTest");
+                    vertx.eventBus().send("test.local", data);
                 }
             });
 

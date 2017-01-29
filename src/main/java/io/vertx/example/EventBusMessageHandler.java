@@ -1,13 +1,12 @@
 package io.vertx.example;
 
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.json.JsonObject;
-
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 
-public class EventBusMessageHandler implements Handler<Message<JsonObject>>
+import java.util.Map;
+
+public class EventBusMessageHandler
 {
     /**
      * EventBus通信 イベントインターフェース
@@ -18,7 +17,7 @@ public class EventBusMessageHandler implements Handler<Message<JsonObject>>
                                                        Packet p);
 
         public abstract boolean onMessagePacketBytesReceive(String handlerId,
-                                                            byte[] packetData);
+                                                            String packetData);
 
         public abstract void onMessageClose();
     }
@@ -26,7 +25,7 @@ public class EventBusMessageHandler implements Handler<Message<JsonObject>>
     protected String _globalAddr;
     protected String _localAddr;
     protected MessageReceiver _receiver;
-    private MessageConsumer<String> _consumer;
+    private MessageConsumer<Buffer> _consumer;
 
     /**
      * コンストラクタ
@@ -50,20 +49,15 @@ public class EventBusMessageHandler implements Handler<Message<JsonObject>>
         
         if (_consumer != null) {
             _consumer.handler(message -> {
-                System.out.println("I have received a message: " + message.body());
+                try {
+                    ReceivePacket packet = new ReceivePacket(message.body());
+                    Map<String,String> data = packet.getData();
+                    _receiver.onMessagePacketBytesReceive(data.get("id"), data.get("Packet"));
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             });
         }
-    }
-
-    @Override
-    public void handle(Message<JsonObject> event)
-    {
-        byte[] packetData;
-        String handlerId;
-                
-        JsonObject body = event.body();
-        handlerId = body.getString("id");
-        packetData = body.getBinary("Packet");
-        _receiver.onMessagePacketBytesReceive(handlerId, packetData);
     }
 }
